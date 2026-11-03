@@ -55,7 +55,11 @@ export class PickerCancelled extends Error {
   }
 }
 
-async function openPort(filter: PortFilter, opts: ConnectOptions, signals: { dtr: boolean; rts: boolean }): Promise<{ link: SerialLink; port: PortLike }> {
+async function openPort(
+  filter: PortFilter,
+  opts: ConnectOptions,
+  signals: { dtr: boolean; rts: boolean },
+): Promise<{ link: SerialLink; port: PortLike }> {
   let port;
   try {
     port = await requestPort(opts.backend, opts.anyPort ? [] : [filter]);
@@ -73,12 +77,13 @@ async function openPort(filter: PortFilter, opts: ConnectOptions, signals: { dtr
     return { link, port };
   } catch (err) {
     const name = err instanceof DOMException ? err.name : '';
-    if (name === 'InvalidStateError') throw new Error('That port is already open in this tab. Disconnect first.');
+    if (name === 'InvalidStateError') throw new Error('That port is already open in this tab. Disconnect first.', { cause: err });
     if (name === 'NetworkError' || name === 'SecurityError') {
       throw new Error(
         opts.backend === 'webusb'
           ? 'Could not claim the USB interface. On a computer, use "USB serial" instead; on Android, unplug and replug the analyzer, then try again.'
           : 'The port is busy. Close other programs using it (PulseView, the gusmanb app, a serial monitor) and try again.',
+        { cause: err },
       );
     }
     throw err;

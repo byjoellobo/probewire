@@ -15,7 +15,13 @@ interface FileHandle {
 type SaveFilePicker = (options: SaveFilePickerOptions) => Promise<FileHandle>;
 
 export function safeFilename(name: string): string {
-  return name.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 120) || 'capture';
+  return (
+    name
+      .replace(/[\\/:*?"<>|]+/g, '-')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 120) || 'capture'
+  );
 }
 
 /**

@@ -43,7 +43,9 @@ describe('config validation', () => {
   it('accepts the external trigger but not a channel one past the last', () => {
     expect(validateConfig({ ...edge, trigger: { ...edge.trigger, channel: 24 } as GusmanbCaptureConfig['trigger'] }, info)).toEqual([]);
     const small = { ...info, channelCount: 16 };
-    expect(validateConfig({ ...edge, trigger: { ...edge.trigger, channel: 16 } as GusmanbCaptureConfig['trigger'] }, small).join()).toMatch(/Trigger channel/);
+    expect(validateConfig({ ...edge, trigger: { ...edge.trigger, channel: 16 } as GusmanbCaptureConfig['trigger'] }, small).join()).toMatch(
+      /Trigger channel/,
+    );
   });
 });
 
@@ -132,16 +134,25 @@ describe('SerialLink error handling', () => {
 });
 
 describe('untrusted .sr files', () => {
-  const metadata = (extra: string): Uint8Array => strToU8(`[device 1]\ncapturefile=logic-1\ntotal probes=1\nsamplerate=1 kHz\nprobe1=A\nunitsize=1\n${extra}`);
+  const metadata = (extra: string): Uint8Array =>
+    strToU8(`[device 1]\ncapturefile=logic-1\ntotal probes=1\nsamplerate=1 kHz\nprobe1=A\nunitsize=1\n${extra}`);
 
   it('never inflates entries that are not part of a session', async () => {
-    const bytes = zipSync({ version: strToU8('2'), metadata: metadata(''), 'logic-1-1': new Uint8Array([1, 0, 1]), 'junk.bin': new Uint8Array(1000) });
+    const bytes = zipSync({
+      version: strToU8('2'),
+      metadata: metadata(''),
+      'logic-1-1': new Uint8Array([1, 0, 1]),
+      'junk.bin': new Uint8Array(1000),
+    });
     const { capture } = await readSr(bytes);
     expect(capture.sampleCount).toBe(3);
   });
 
   it('does not resolve file names through the object prototype', async () => {
-    const bytes = zipSync({ version: strToU8('2'), metadata: strToU8('[device 1]\ncapturefile=constructor\ntotal probes=1\nunitsize=1\nprobe1=A\n') });
+    const bytes = zipSync({
+      version: strToU8('2'),
+      metadata: strToU8('[device 1]\ncapturefile=constructor\ntotal probes=1\nunitsize=1\nprobe1=A\n'),
+    });
     await expect(readSr(bytes)).rejects.toThrow(/missing/);
   });
 

@@ -5,3 +5,7 @@ coverage/
 .playwright-mcp/
 *.log
 .DS_Store
+playwright-report/
+test-results/
+.remember/
+.impeccable/

@@ -26,6 +26,8 @@ export type TraceRow =
       readonly annotations: readonly Annotation[];
       readonly color: string;
       readonly height: number;
+      /** Draw a heavier rule above this row (first decoder row). */
+      readonly groupStart?: boolean;
     };
 
 export interface Scene {
@@ -99,6 +101,10 @@ export function drawTraces(ctx: CanvasRenderingContext2D, scene: Scene): void {
     }
     ctx.fillStyle = THEME.trace;
     ctx.fillRect(0, top + row.height - 1, width, 1);
+    if (row.kind === 'decoder' && row.groupStart) {
+      ctx.fillStyle = THEME.traceStrong;
+      ctx.fillRect(0, top, width, 2);
+    }
     top += row.height;
   }
   drawMarkers(ctx, scene, height);
@@ -195,7 +201,8 @@ function strokeLogic(ctx: CanvasRenderingContext2D, color: string, line: Path2D,
   ctx.fill(fill);
   ctx.globalAlpha = 1;
   if (busy) {
-    ctx.globalAlpha = 0.85;
+    // Dense activity reads as texture, not as the brightest thing on screen.
+    ctx.globalAlpha = 0.5;
     ctx.fill(busy);
     ctx.globalAlpha = 1;
   }

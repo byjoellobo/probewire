@@ -1,21 +1,35 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vite';
+import { readFileSync } from 'node:fs';
 import preact from '@preact/preset-vite';
+import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string };
+
+// GitHub Pages serves the app from /probewire/; local builds and previews use /.
+const base = process.env.BASE_PATH ?? '/';
+
+const BOARD = '#152724';
+const MASK = '#0f1d1b';
+
 export default defineConfig({
+  base,
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   plugins: [
     preact(),
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['favicon.ico', 'logo.svg', 'apple-touch-icon-180x180.png'],
       manifest: {
-        name: 'Logic in a Tab',
-        short_name: 'Logic',
+        id: base,
+        name: 'Probewire',
+        short_name: 'Probewire',
         description:
-          'A logic analyzer in your browser. Capture from Pico-based analyzers over Web Serial, decode UART, I2C and SPI, and exchange .sr files with PulseView.',
-        theme_color: '#0b0f14',
-        background_color: '#0b0f14',
+          'A logic analyzer in your browser tab. Capture from Raspberry Pi Pico analyzers over USB, decode UART, I2C and SPI, and exchange .sr files with PulseView.',
+        theme_color: BOARD,
+        background_color: MASK,
         display: 'standalone',
         orientation: 'any',
         start_url: '.',
@@ -41,13 +55,19 @@ export default defineConfig({
       },
     }),
   ],
+  preview: {
+    port: 4799,
+    strictPort: true,
+  },
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
     coverage: {
       provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
       include: ['src/core/**', 'src/decoders/**', 'src/formats/**', 'src/drivers/**', 'src/storage/**', 'src/render/viewport.ts'],
       exclude: ['**/*.test.ts'],
+      thresholds: { statements: 80, lines: 80, functions: 80, branches: 70 },
     },
   },
 });

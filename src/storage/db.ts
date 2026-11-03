@@ -7,7 +7,7 @@
  */
 import { allocWords, createCapture, type AnalogChannel, type Capture, type LogicChannel } from '../core/capture';
 
-const DB_NAME = 'logic-in-a-tab';
+const DB_NAME = 'probewire';
 const DB_VERSION = 1;
 const META_STORE = 'captures';
 const CHUNK_STORE = 'chunks';
@@ -154,7 +154,7 @@ export function metaFor(capture: Capture, decoders: readonly SavedDecoder[]): Ca
     source: capture.source,
     byteSize: logicBytes + analogBytes,
     logicChunks: Math.max(1, Math.ceil(logicBytes / CHUNK_BYTES)),
-    analogChunks: Math.max(1, Math.ceil(capture.sampleCount * 4 / CHUNK_BYTES)),
+    analogChunks: Math.max(1, Math.ceil((capture.sampleCount * 4) / CHUNK_BYTES)),
     decoders,
     savedAt: Date.now(),
   };

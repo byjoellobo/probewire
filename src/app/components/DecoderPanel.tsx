@@ -7,7 +7,7 @@ import type { Annotation, DecoderDef, DecoderOptionSpec } from '../../decoders/t
 import { ANNOTATION_COLORS } from '../../render/theme';
 import { newDecoderInstance, type DecoderInstance, type DecoderResult } from '../workspace';
 import { Field, NumberInput } from './fields';
-import { IconSave, IconTrash } from './icons';
+import { IconEye, IconEyeOff, IconSave, IconTrash } from './icons';
 
 interface DecoderPanelProps {
   readonly capture?: Capture;
@@ -20,15 +20,20 @@ interface DecoderPanelProps {
 }
 
 export function DecoderPanel({ capture, instances, results, onChange, onJump, onExportCsv, accentFor }: DecoderPanelProps) {
-  const update = (uid: string, patch: Partial<DecoderInstance>): void =>
-    onChange(instances.map((i) => (i.uid === uid ? { ...i, ...patch } : i)));
+  const update = (uid: string, patch: Partial<DecoderInstance>): void => onChange(instances.map((i) => (i.uid === uid ? { ...i, ...patch } : i)));
   return (
     <>
       <div class="group">
         <h2>Add a decoder</h2>
         <div class="row">
           {DECODERS.map((d) => (
-            <button key={d.id} type="button" class="btn" title={d.description} onClick={() => onChange([...instances, newDecoderInstance(d.id, capture)])}>
+            <button
+              key={d.id}
+              type="button"
+              class="btn"
+              title={d.description}
+              onClick={() => onChange([...instances, newDecoderInstance(d.id, capture)])}
+            >
               {d.name}
             </button>
           ))}
@@ -100,7 +105,12 @@ function DecoderBlock({ def, inst, capture, result, accent, onUpdate, onRemove, 
         </button>
       </header>
       {result && !result.ok && <p class="hint error">{result.error}</p>}
-      {result?.ok && result.output.warnings.map((w) => <p key={w} class="hint warn">{w}</p>)}
+      {result?.ok &&
+        result.output.warnings.map((w) => (
+          <p key={w} class="hint warn">
+            {w}
+          </p>
+        ))}
 
       {def.channels.map((spec) => (
         <Field key={spec.id} label={spec.label} htmlFor={`${inst.uid}-${spec.id}`}>
@@ -157,11 +167,12 @@ function DecoderBlock({ def, inst, capture, result, accent, onUpdate, onRemove, 
             <button
               key={r.id}
               type="button"
-              class="btn small"
+              class="btn small row-toggle"
               aria-pressed={!hidden}
-              style={hidden ? { opacity: 0.55, textDecoration: 'line-through' } : undefined}
+              title={hidden ? `Show the ${r.label} row` : `Hide the ${r.label} row`}
               onClick={() => onUpdate({ hiddenRows: hidden ? inst.hiddenRows.filter((x) => x !== r.id) : [...inst.hiddenRows, r.id] })}
             >
+              {hidden ? <IconEyeOff size={15} /> : <IconEye size={15} />}
               {r.label}
             </button>
           );
@@ -185,7 +196,18 @@ function DecoderBlock({ def, inst, capture, result, accent, onUpdate, onRemove, 
             </thead>
             <tbody>
               {values.slice(0, TABLE_LIMIT).map((a) => (
-                <tr key={`${a.row}-${a.start}`} onClick={() => onJump(a)}>
+                <tr
+                  key={`${a.row}-${a.start}`}
+                  tabIndex={0}
+                  aria-label={`Show ${a.texts[0]} on the waveform`}
+                  onClick={() => onJump(a)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onJump(a);
+                    }
+                  }}
+                >
                   <td>{formatDuration((a.start - (capture.triggerSample ?? 0)) / capture.sampleRate, 6)}</td>
                   <td>{def.rows[a.row]?.label}</td>
                   <td>

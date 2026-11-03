@@ -65,9 +65,7 @@ describe('SigrokPicoDevice', () => {
 
   it('turns a device abort into an error', async () => {
     const { device } = await connect({ abortAfterBytes: 0.5 });
-    await expect(
-      device.capture({ digitalChannels: 8, analogChannels: [], sampleRate: 1_000_000, sampleCount: 1000 }),
-    ).rejects.toThrow(/aborted/);
+    await expect(device.capture({ digitalChannels: 8, analogChannels: [], sampleRate: 1_000_000, sampleCount: 1000 })).rejects.toThrow(/aborted/);
     await device.close();
   });
 

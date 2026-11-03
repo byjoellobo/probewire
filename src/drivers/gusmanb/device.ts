@@ -1,6 +1,6 @@
 /** Host driver for the gusmanb Pico logic analyzer over a SerialLink. */
 import { createCapture } from '../../core/capture';
-import { SerialLink, TimeoutError, delay } from '../serial/link';
+import { type SerialLink, TimeoutError, delay } from '../serial/link';
 import { formatHz, type CaptureDevice, type CaptureOutcome, type CaptureRunOptions, type DeviceSummary } from '../types';
 import {
   CANCEL_BYTE,

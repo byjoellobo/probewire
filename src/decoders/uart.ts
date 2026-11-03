@@ -165,7 +165,14 @@ function decodeLine(p: LogicPyramid, target: LineTarget, cfg: UartConfig, out: A
     const dataStart = edge(1);
     const dataEnd = edge(1 + cfg.dataBits);
     out.push(
-      ann(dataStart, dataEnd, dataRow, 'data', [formatValue(value, cfg.dataBits, cfg.format), formatValueShort(value, cfg.dataBits, cfg.format)], value),
+      ann(
+        dataStart,
+        dataEnd,
+        dataRow,
+        'data',
+        [formatValue(value, cfg.dataBits, cfg.format), formatValueShort(value, cfg.dataBits, cfg.format)],
+        value,
+      ),
     );
     bits.forEach((v, b) => out.push(ann(edge(1 + b), edge(2 + b), bitsRow, 'bit', [String(v)])));
 

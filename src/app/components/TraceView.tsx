@@ -10,17 +10,7 @@ import type { Ref } from 'preact';
 import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { Annotation } from '../../decoders/types';
 import { drawRuler, drawTraces, type TraceRow } from '../../render/draw';
-import {
-  centerOn,
-  clampViewport,
-  fitViewport,
-  panBy,
-  sampleToX,
-  xToSample,
-  zoomAt,
-  zoomToRange,
-  type Viewport,
-} from '../../render/viewport';
+import { centerOn, clampViewport, fitViewport, panBy, sampleToX, xToSample, zoomAt, zoomToRange, type Viewport } from '../../render/viewport';
 import type { Workspace } from '../workspace';
 
 export interface RowSpec {
@@ -32,6 +22,10 @@ export interface RowSpec {
   /** Logic channel bit index, for renaming. */
   readonly channel?: number;
   readonly title?: string;
+  /** Short owner tag shown before the label, e.g. the decoder name on decoder rows. */
+  readonly tag?: string;
+  /** First row of a new group (decoder rows after channel rows). */
+  readonly groupStart?: boolean;
 }
 
 export interface Cursors {
@@ -411,6 +405,19 @@ export function TraceView({ ws, rows, cursors, onCursors, probe, onProbe, select
         case 'f':
           setViewport(fitViewport(count, width));
           return true;
+        case 'a':
+        case 'b': {
+          // Keyboard measuring: drop cursor A or B at the centre of the view.
+          const centre = Math.max(0, Math.min(count, Math.round(xToSample(v, width / 2))));
+          const next = { ...propsRef.current.cursors, [e.key]: centre };
+          propsRef.current = { ...propsRef.current, cursors: next };
+          onCursors(next);
+          return true;
+        }
+        case 'x':
+          propsRef.current = { ...propsRef.current, cursors: {} };
+          onCursors({});
+          return true;
         case 'Home':
           setViewport({ start: 0, spp: v.spp });
           return true;
@@ -427,17 +434,25 @@ export function TraceView({ ws, rows, cursors, onCursors, probe, onProbe, select
   return (
     <div class="traceview">
       <div class="ruler">
-        <div class="corner">{rows.length} rows</div>
+        <div class="corner">{ws.capture.triggerSample !== undefined ? 'From trigger' : 'From start'}</div>
         <canvas
           ref={rulerRef}
-          aria-label="Time ruler. Tap to place cursors A and B; drag a cursor to move it."
+          aria-label="Time ruler. Click or tap to place cursors A and B; drag a cursor to move it."
           onPointerDown={onRulerDown}
           onPointerMove={onRulerMove}
           onPointerUp={onRulerUp}
           onPointerCancel={onRulerUp}
         />
       </div>
-      <div class="rows" ref={scrollRef} tabIndex={0} onScroll={schedule} onKeyDown={onKeyDown} aria-label="Waveforms. Arrow keys pan, plus and minus zoom, F fits.">
+      <div
+        class="rows"
+        ref={scrollRef}
+        tabIndex={0}
+        onScroll={schedule}
+        onKeyDown={onKeyDown}
+        id="waveform"
+        aria-label="Waveforms. Arrow keys pan, plus and minus zoom, F fits, A and B place cursors at the centre, X clears them."
+      >
         <div class="rows-inner" style={{ height: `${totalHeight}px` }}>
           <div class="labels">
             {rows.map((r) => (
@@ -490,8 +505,9 @@ function RowLabel({ row, editing, onEdit, onDone }: RowLabelProps) {
     onDone(name);
   };
   return (
-    <div class={`label${isDecoder ? ' decoder-row' : ''}`} style={style} title={row.title ?? row.label}>
+    <div class={`label${isDecoder ? ' decoder-row' : ''}${row.groupStart ? ' group-start' : ''}`} style={style} title={row.title ?? row.label}>
       <span class="swatch" />
+      {row.tag && <span class="tag">{row.tag}</span>}
       {editing ? (
         <input
           aria-label={`New name for ${row.label}`}

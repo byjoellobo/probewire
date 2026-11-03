@@ -27,7 +27,8 @@ export interface DecoderInstance {
   readonly hiddenRows: readonly string[];
 }
 
-export type DecoderResult = { readonly ok: true; readonly output: DecodeOutput; readonly ms: number } | { readonly ok: false; readonly error: string };
+export type DecoderResult =
+  { readonly ok: true; readonly output: DecodeOutput; readonly ms: number } | { readonly ok: false; readonly error: string };
 
 /** Name fragments that suggest a decoder input, most specific first. */
 const CHANNEL_HINTS: Record<string, readonly string[]> = {
@@ -42,7 +43,10 @@ const CHANNEL_HINTS: Record<string, readonly string[]> = {
 };
 
 function tokens(name: string): string[] {
-  return name.toLowerCase().split(/[^a-z0-9_]+/).filter(Boolean);
+  return name
+    .toLowerCase()
+    .split(/[^a-z0-9_]+/)
+    .filter(Boolean);
 }
 
 /** Guesses a channel mapping from channel names, falling back to the first channels in order. */

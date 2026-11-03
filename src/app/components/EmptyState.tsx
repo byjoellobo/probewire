@@ -69,10 +69,10 @@ export function EmptyState({ support, onDemo, onConnect, onOpen, busy, recent }:
             );
           })}
         </svg>
-        <h1>A logic analyzer that runs in a browser tab.</h1>
+        <h2>A logic analyzer that runs in a browser tab.</h2>
         <p>
-          Plug in a Raspberry Pi Pico running the gusmanb or sigrok-pico firmware, capture up to 24 channels, and decode UART, I2C and SPI. Captures stay
-          on this device and open in PulseView as .sr files.
+          Plug in a Raspberry Pi Pico running the gusmanb or sigrok-pico firmware, capture up to 24 channels, and decode UART, I2C and SPI. Captures
+          stay on this device and open in PulseView as .sr files.
         </p>
         <div class="actions">
           <button type="button" class="btn primary" onClick={onDemo} disabled={busy}>
@@ -92,8 +92,8 @@ export function EmptyState({ support, onDemo, onConnect, onOpen, busy, recent }:
         </div>
         {!usb && (
           <p class="support-note">
-            This browser cannot talk to USB devices. Use Chrome or Edge on a computer, or Chrome on Android, to connect an analyzer. The demo and .sr files
-            work everywhere.
+            This browser cannot talk to USB devices. Use Chrome or Edge on a computer, or Chrome on Android, to connect an analyzer. The demo and .sr
+            files work everywhere.
           </p>
         )}
       </div>

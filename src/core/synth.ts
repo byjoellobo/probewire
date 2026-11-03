@@ -267,9 +267,7 @@ export class SignalBuilder {
   private i2cTransaction(scl: number, sda: number, start: number, tr: I2cSynthTransaction, q: number): number {
     const rw = tr.read ? 1 : 0;
     const tenBit = tr.address > 0x7f;
-    const addrBytes = tenBit
-      ? [0xf0 | (((tr.address >> 8) & 3) << 1) | rw, tr.address & 0xff]
-      : [((tr.address & 0x7f) << 1) | rw];
+    const addrBytes = tenBit ? [0xf0 | (((tr.address >> 8) & 3) << 1) | rw, tr.address & 0xff] : [((tr.address & 0x7f) << 1) | rw];
     let t = this.i2cByte(scl, sda, start, addrBytes[0], tr.nackAddress ? 1 : 0, q);
     if (tr.nackAddress) return t;
     for (let k = 1; k < addrBytes.length; k++) t = this.i2cByte(scl, sda, t, addrBytes[k], 0, q);

@@ -72,7 +72,7 @@ export function DevicePanel(props: DevicePanelProps) {
                 ? 'Works in Chrome and Edge on computers, and Chrome 148+ on Android 17+.'
                 : 'For Android phones without USB serial support: talks to the board over WebUSB. Not for Windows, where the serial driver holds the device.'}
             </p>
-            <label class="row hint" style={{ marginTop: '8px' }}>
+            <label class="check">
               <input type="checkbox" checked={props.anyPort} onChange={(e) => props.onAnyPort((e.currentTarget as HTMLInputElement).checked)} />
               Show every serial port, not just matching boards
             </label>
@@ -117,7 +117,11 @@ export function DevicePanel(props: DevicePanelProps) {
       )}
 
       {connected?.kind === 'gusmanb' && (
-        <GusmanbForm info={connected.device.info} config={props.configs.gusmanb} onChange={(gusmanb) => props.onConfigs({ ...props.configs, gusmanb })} />
+        <GusmanbForm
+          info={connected.device.info}
+          config={props.configs.gusmanb}
+          onChange={(gusmanb) => props.onConfigs({ ...props.configs, gusmanb })}
+        />
       )}
       {connected?.kind === 'sigrok-pico' && (
         <PicoForm identity={connected.device.identity} config={props.configs.pico} onChange={(pico) => props.onConfigs({ ...props.configs, pico })} />

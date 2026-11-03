@@ -1,6 +1,6 @@
 /** Host driver for sigrok-pico over a SerialLink. */
 import { allocWords, createCapture } from '../../core/capture';
-import { AbortedError, SerialLink, TimeoutError, delay } from '../serial/link';
+import { AbortedError, type SerialLink, TimeoutError, delay } from '../serial/link';
 import { formatHz, type CaptureDevice, type CaptureOutcome, type CaptureRunOptions, type DeviceSummary } from '../types';
 import {
   ANALOG_SCALE_PATTERN,

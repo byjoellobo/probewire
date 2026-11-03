@@ -2,7 +2,7 @@
 import { useState } from 'preact/hooks';
 import { formatBytes, formatCount, formatDuration, formatFrequency } from '../../core/units';
 import type { CaptureMeta, StorageStatus } from '../../storage/db';
-import { IconOpen, IconPencil, IconSave, IconTrash } from './icons';
+import { IconOpen, IconPencil, IconSave, IconTrash, Logo } from './icons';
 
 interface LibraryPanelProps {
   readonly items: readonly CaptureMeta[];
@@ -19,7 +19,11 @@ interface LibraryPanelProps {
   readonly onImport: () => void;
   readonly onSaveCurrent: () => void;
   readonly onPersist: () => void;
+  /** Touch-first device: no drag-and-drop hint. */
+  readonly coarsePointer: boolean;
 }
+
+const REPO = 'https://github.com/byjoellobo/probewire';
 
 export function LibraryPanel(props: LibraryPanelProps) {
   const { items, status } = props;
@@ -41,8 +45,10 @@ export function LibraryPanel(props: LibraryPanelProps) {
             </button>
           )}
         </div>
-        <p class="hint">Opens sigrok session files from PulseView or sigrok-cli. You can also drop a file onto the window.</p>
-        <label class="row hint" style={{ marginTop: '10px' }}>
+        <p class="hint">
+          Opens sigrok session files from PulseView or sigrok-cli.{props.coarsePointer ? '' : ' You can also drop a file onto the window.'}
+        </p>
+        <label class="check">
           <input type="checkbox" checked={props.autoSave} onChange={(e) => props.onAutoSave((e.currentTarget as HTMLInputElement).checked)} />
           Keep every new capture in the library
         </label>
@@ -50,7 +56,7 @@ export function LibraryPanel(props: LibraryPanelProps) {
 
       <div class="group">
         <h2>
-          Library <small>{items.length === 0 ? 'empty' : `${items.length} captures`}</small>
+          Library <small>{items.length === 0 ? 'empty' : `${items.length} capture${items.length === 1 ? '' : 's'}`}</small>
         </h2>
         {items.length === 0 && <p class="hint">Captures you keep are stored in this browser, on this device, and work offline.</p>}
         {items.map((m) => (
@@ -75,9 +81,12 @@ export function LibraryPanel(props: LibraryPanelProps) {
                 }}
               />
             ) : (
-              <button type="button" class="lib-name" title={`Open ${m.name}`} onClick={() => props.onOpen(m.id)}>
-                {m.name}
-              </button>
+              <span class="lib-title">
+                <button type="button" class="lib-name" title={`Open ${m.name}`} onClick={() => props.onOpen(m.id)}>
+                  {m.name}
+                </button>
+                {m.id === props.currentId && <span class="badge">open</span>}
+              </span>
             )}
             <div class="lib-actions">
               <button type="button" class="icon-btn" title="Rename" onClick={() => setRenaming(m.id)}>
@@ -105,7 +114,7 @@ export function LibraryPanel(props: LibraryPanelProps) {
               )}
             </div>
             <div class="lib-meta">
-              <span>{new Date(m.createdAt).toLocaleString()}</span>
+              <span>{m.source}</span>
               <span>{formatDuration(m.sampleCount / m.sampleRate, 3)}</span>
               <span>{formatFrequency(m.sampleRate)}</span>
               <span>{formatCount(m.sampleCount)} samples</span>
@@ -140,6 +149,35 @@ export function LibraryPanel(props: LibraryPanelProps) {
           </>
         )}
         {status?.persisted && <p class="hint">The browser has agreed to keep the library.</p>}
+      </div>
+
+      <div class="group">
+        <h2>About</h2>
+        <div class="about">
+          <Logo size={34} />
+          <p>
+            Probewire {__APP_VERSION__}
+            <br />
+            <span class="hint">MIT licensed. Runs entirely in this browser.</span>
+          </p>
+        </div>
+        <div class="links">
+          <a href={`${REPO}/blob/main/docs/getting-started.md`} target="_blank" rel="noopener noreferrer">
+            Guide
+          </a>
+          <a href={`${REPO}/blob/main/docs/hardware.md`} target="_blank" rel="noopener noreferrer">
+            Flashing a Pico
+          </a>
+          <a href={`${REPO}/releases`} target="_blank" rel="noopener noreferrer">
+            What's new
+          </a>
+          <a href={`${REPO}/issues/new/choose`} target="_blank" rel="noopener noreferrer">
+            Report a problem
+          </a>
+          <a href={REPO} target="_blank" rel="noopener noreferrer">
+            Source code
+          </a>
+        </div>
       </div>
     </>
   );

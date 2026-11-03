@@ -4,7 +4,7 @@ import type { SerialBackend } from '../drivers/serial/ports';
 import { DEFAULT_CONFIGS, DEVICE_CHOICES, type CaptureConfigs, type DeviceChoice } from './connection';
 import type { DecoderInstance } from './workspace';
 
-const KEY = 'logic-in-a-tab:settings:v1';
+const KEY = 'probewire:settings:v1';
 
 export interface Settings {
   readonly choice: DeviceChoice;

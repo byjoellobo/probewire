@@ -27,7 +27,7 @@ export function Header(p: HeaderProps) {
     <header class="header">
       <div class="brand">
         <Logo />
-        <span class="wordmark">Logic in a Tab</span>
+        <h1 class="wordmark">Probewire</h1>
       </div>
       <button type="button" class="device-pill" onClick={p.onDevice} title="Analyzer settings">
         <span class={`dot${p.running || p.connecting ? ' busy' : p.deviceTitle ? ' on' : ''}`} />
@@ -49,9 +49,12 @@ export function Header(p: HeaderProps) {
           <button type="button" class="icon-btn" title="Zoom in (+)" onClick={() => p.onZoom(0.5)} disabled={!p.hasCapture}>
             <IconZoomIn />
           </button>
-          <button type="button" class="icon-btn" title="Show the whole capture (F)" onClick={p.onFit} disabled={!p.hasCapture}>
-            <IconFit />
-          </button>
+        </span>
+        {/* Fit stays on phones too: pinch can zoom in, but getting back out should take one tap. */}
+        <button type="button" class="icon-btn" title="Show the whole capture (F)" onClick={p.onFit} disabled={!p.hasCapture}>
+          <IconFit />
+        </button>
+        <span class="desktop-only toolbar">
           <button type="button" class="icon-btn" title="Clear cursors" onClick={p.onClearCursors} disabled={!p.hasCursors}>
             <IconClear />
           </button>

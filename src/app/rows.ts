@@ -29,7 +29,10 @@ export function annotationsByRow(output: DecodeOutput, rowCount: number): Annota
 }
 
 export function decoderAccent(instances: readonly DecoderInstance[], uid: string): string {
-  const i = Math.max(0, instances.findIndex((d) => d.uid === uid));
+  const i = Math.max(
+    0,
+    instances.findIndex((d) => d.uid === uid),
+  );
   return DECODER_ACCENTS[i % DECODER_ACCENTS.length];
 }
 
@@ -57,6 +60,7 @@ export function buildRows(
       trace: { kind: 'analog', key: `A${k}`, pyramid: ws.analog[k], color, height: heights.analog, unit: a.unit },
     });
   });
+  let firstDecoderRow = true;
   decoders.forEach((inst) => {
     const def = getDecoder(inst.decoderId);
     const res = results[inst.uid];
@@ -66,17 +70,28 @@ export function buildRows(
     def.rows.forEach((r, ri) => {
       if (inst.hiddenRows.includes(r.id)) return;
       const key = `D${inst.uid}:${ri}`;
+      // Decoder rows carry a decoder tag ("UART" + "TX") so they never read as a channel name.
       rows.push({
         key,
-        label: `${def.name} ${r.label}`,
+        label: r.label,
+        tag: def.name,
         title: `${def.longName}: ${r.label}`,
         swatch: accent,
         height: heights.decoder,
-        trace: { kind: 'decoder', key, annotations: perRow[ri], color: accent, height: heights.decoder },
+        groupStart: firstDecoderRow,
+        trace: { kind: 'decoder', key, annotations: perRow[ri], color: accent, height: heights.decoder, groupStart: firstDecoderRow },
       });
+      firstDecoderRow = false;
     });
   });
   return rows;
+}
+
+/** Duty cycle as a percentage; bursty signals read "under 1%" rather than a misleading "0.0%". */
+export function formatDuty(duty: number): string {
+  if (duty > 0 && duty < 0.01) return 'under 1%';
+  if (duty < 1 && duty > 0.99) return 'over 99%';
+  return `${(duty * 100).toFixed(1)}%`;
 }
 
 /** Annotation in `anns` covering `sample`, if any (anns sorted, non-overlapping). */
@@ -107,7 +122,7 @@ export function probeReadout(ws: Workspace, rows: readonly RowSpec[], probe: Pro
     if (!m) return `t = ${time}`;
     const parts = [`${row.label} ${m.level ? 'high' : 'low'} for ${m.truncated ? 'at least ' : ''}${formatDuration(m.widthSeconds, 4)}`];
     if (m.periodSeconds !== undefined && m.frequency !== undefined && m.dutyCycle !== undefined) {
-      parts.push(`period ${formatDuration(m.periodSeconds, 4)} (${formatFrequency(m.frequency)})`, `duty ${(m.dutyCycle * 100).toFixed(1)}%`);
+      parts.push(`period ${formatDuration(m.periodSeconds, 4)} (${formatFrequency(m.frequency)})`, `duty ${formatDuty(m.dutyCycle)}`);
     }
     return `${parts.join(', ')}  at ${time}`;
   }

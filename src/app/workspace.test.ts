@@ -19,7 +19,12 @@ describe('autoAssign', () => {
   });
 
   it('falls back to channels in order when names give no hints', () => {
-    const plain = createCapture({ sampleRate: 1e6, channels: [0, 1, 2, 3].map((i) => ({ index: i, name: `D${i}` })), samples: new Uint8Array(4), source: 't' });
+    const plain = createCapture({
+      sampleRate: 1e6,
+      channels: [0, 1, 2, 3].map((i) => ({ index: i, name: `D${i}` })),
+      samples: new Uint8Array(4),
+      source: 't',
+    });
     expect(autoAssign(getDecoder('i2c')!, plain)).toEqual({ scl: 0, sda: 1 });
     expect(Object.values(autoAssign(getDecoder('spi')!, plain))).toEqual([0, 1, 2, 3]);
   });

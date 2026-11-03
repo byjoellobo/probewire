@@ -84,7 +84,10 @@ describe('device info', () => {
 
 describe('capture request', () => {
   it('lays out the 48-byte struct with natural alignment', () => {
-    const fields = requestFields(edge({ channels: [0, 5, 9], trigger: { type: 'edge', channel: 5, falling: true, bursts: 3, measureBursts: true } }), INFO);
+    const fields = requestFields(
+      edge({ channels: [0, 5, 9], trigger: { type: 'edge', channel: 5, falling: true, bursts: 3, measureBursts: true } }),
+      INFO,
+    );
     const buf = encodeCaptureRequest(fields);
     const v = new DataView(buf.buffer);
     expect(buf.length).toBe(48);
@@ -111,19 +114,13 @@ describe('capture request', () => {
   it('compensates pattern-trigger latency', () => {
     const offset = patternTriggerOffset('complex', 100_000_000, 100_000_000);
     expect(offset).toBe(5);
-    const fields = requestFields(
-      edge({ sampleRate: 100_000_000, trigger: { type: 'complex', baseChannel: 0, bitCount: 3, pattern: 0b101 } }),
-      INFO,
-    );
+    const fields = requestFields(edge({ sampleRate: 100_000_000, trigger: { type: 'complex', baseChannel: 0, bitCount: 3, pattern: 0b101 } }), INFO);
     expect(fields).toMatchObject({ triggerType: 1, invertedOrCount: 3, triggerValue: 5, preSamples: 105, postSamples: 995 });
     expect(patternTriggerOffset('fast', 1_000_000, 100_000_000)).toBe(0);
   });
 
   it('forces blast settings', () => {
-    const fields = requestFields(
-      edge({ sampleRate: 200_000_000, preSamples: 50, trigger: { type: 'blast', channel: 2, falling: false } }),
-      INFO,
-    );
+    const fields = requestFields(edge({ sampleRate: 200_000_000, preSamples: 50, trigger: { type: 'blast', channel: 2, falling: false } }), INFO);
     expect(fields).toMatchObject({ triggerType: 3, preSamples: 0, loopCount: 0, measure: false });
   });
 });

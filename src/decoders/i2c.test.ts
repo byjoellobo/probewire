@@ -15,11 +15,9 @@ function run(transactions: readonly I2cSynthTransaction[], options: OptionValues
   return i2cDecoder.decode({ pyramid: new LogicPyramid(b.build()), sampleRate: RATE }, { scl: 0, sda: 1 }, options);
 }
 
-const frames = (out: DecodeOutput): string[] =>
-  out.annotations.filter((a) => a.row === FRAMES).map((a) => a.texts[a.texts.length - 1]);
+const frames = (out: DecodeOutput): string[] => out.annotations.filter((a) => a.row === FRAMES).map((a) => a.texts[a.texts.length - 1]);
 const longFrames = (out: DecodeOutput): string[] => out.annotations.filter((a) => a.row === FRAMES).map((a) => a.texts[0]);
-const transactions = (out: DecodeOutput): string[] =>
-  out.annotations.filter((a) => a.row === TRANSACTIONS).map((a) => a.texts[0]);
+const transactions = (out: DecodeOutput): string[] => out.annotations.filter((a) => a.row === TRANSACTIONS).map((a) => a.texts[0]);
 
 describe('I2C decoder', () => {
   it('decodes a write', () => {

@@ -1,5 +1,5 @@
 /*
- * Logic in a Tab: solder-mask board, silkscreen type, ENIG gold for anything
+ * Probewire: solder-mask board, silkscreen type, ENIG gold for anything
  * you grab or measure, probe-wire colours for channels.
  */
 :root {
@@ -8,6 +8,8 @@
   --board-raised: #1b302c;
   --trace: #24403b;
   --trace-strong: #335a52;
+  /* Borders of interactive controls: at least 3:1 against both surfaces (WCAG 1.4.11). */
+  --control-border: #4e7e74;
   --silk: #e6ebe3;
   --silk-dim: #8fa39c;
   --silk-faint: #53675f;
@@ -66,6 +68,73 @@ select {
 :focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
+}
+
+/* Browser surfaces carry the palette too. */
+::selection {
+  background: rgba(217, 174, 78, 0.35);
+  color: var(--silk);
+}
+
+html {
+  scrollbar-color: var(--trace-strong) transparent;
+  accent-color: var(--gold);
+  caret-color: var(--gold);
+}
+
+input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex: none;
+}
+
+input:disabled,
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+[aria-invalid='true'] {
+  border-color: var(--danger) !important;
+}
+
+.stack {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.stack .hint {
+  margin: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -48px;
+  z-index: 30;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  background: var(--gold);
+  color: #1a1408;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  margin-top: 6px;
+  font-size: var(--text-s);
+  color: var(--silk-dim);
+  cursor: pointer;
 }
 
 .sr-only {
@@ -145,6 +214,10 @@ select {
 
 .status .gold {
   color: var(--gold);
+}
+
+.status .blocked {
+  color: var(--warn);
 }
 
 /* ------------------------------------------------------------------ header */
@@ -260,6 +333,13 @@ select {
 
 .btn.primary:hover:not(:disabled) {
   background: var(--gold-press);
+}
+
+/* Gold means "ready to act"; a primary that cannot act goes neutral. */
+.btn.primary:disabled {
+  background: transparent;
+  border-color: var(--control-border);
+  color: var(--silk-dim);
 }
 
 .btn.stop {
@@ -419,7 +499,7 @@ select {
   width: 100%;
   min-height: 34px;
   padding: 4px 8px;
-  border: 1px solid var(--trace-strong);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius);
   background: var(--mask);
   color: var(--silk);
@@ -441,7 +521,7 @@ select {
 
 .segmented {
   display: flex;
-  border: 1px solid var(--trace-strong);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius);
   overflow: hidden;
 }
@@ -481,9 +561,9 @@ select {
   border: 1px solid var(--trace-strong);
   border-radius: 4px;
   background: transparent;
-  color: var(--silk-faint);
+  color: var(--silk-dim);
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -501,8 +581,9 @@ select {
 
 .chip[aria-pressed='true'] {
   color: var(--silk);
+  font-weight: 700;
   background: var(--board-raised);
-  border-color: var(--silk-faint);
+  border-color: var(--control-border);
 }
 
 .chip[aria-pressed='true']::before {
@@ -575,8 +656,18 @@ select {
   cursor: pointer;
 }
 
-.results tr:hover td {
+.results tr:hover td,
+.results tr:focus-visible td {
   background: var(--board-raised);
+}
+
+.results tr:focus-visible {
+  outline-offset: -2px;
+}
+
+.row-toggle[aria-pressed='false'] {
+  color: var(--silk-dim);
+  border-style: dashed;
 }
 
 .results .kind {
@@ -597,9 +688,15 @@ select {
   border-bottom: 1px solid var(--trace);
 }
 
-.lib-item.current .lib-name::after {
-  content: 'open';
-  margin-left: 8px;
+.lib-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.badge {
+  flex: none;
   padding: 0 6px;
   border-radius: 3px;
   background: var(--board-raised);
@@ -623,9 +720,45 @@ select {
 .lib-meta {
   grid-column: 1 / -1;
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 2px 12px;
   font-size: var(--text-xs);
   color: var(--silk-dim);
+}
+
+.lib-meta span {
+  white-space: nowrap;
+}
+
+.about {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.about p {
+  margin: 0;
+  font-size: var(--text-s);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 8px;
+  font-size: var(--text-s);
+}
+
+.links a,
+.hint a {
+  color: var(--silk);
+  text-decoration-color: var(--control-border);
+  text-underline-offset: 3px;
+}
+
+.links a:hover,
+.hint a:hover {
+  text-decoration-color: var(--gold);
 }
 
 .lib-actions {
@@ -644,8 +777,21 @@ select {
 }
 
 .meter > div {
+  min-width: 3px;
   height: 100%;
   background: var(--silk-dim);
+}
+
+/* Prose wraps without one-word last lines; headings balance. */
+p,
+.hint {
+  text-wrap: pretty;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
 /* ------------------------------------------------------------ trace view */
@@ -689,7 +835,12 @@ select {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  outline: none;
+}
+
+/* The waveform takes keyboard shortcuts, so show when it has focus. */
+.rows:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
 }
 
 .rows-inner {
@@ -737,10 +888,29 @@ select {
   cursor: text;
 }
 
+/* The whole row height is the rename target, not just the text line. */
+.label button.name {
+  align-self: stretch;
+}
+
 .label.decoder-row {
-  color: var(--silk-dim);
+  color: var(--silk);
   font-weight: 500;
   font-size: var(--text-xs);
+}
+
+.label .tag {
+  flex: none;
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--silk-dim);
+  font-weight: 600;
+}
+
+/* A thicker rule separates captured channels from decoded rows. */
+.label.group-start {
+  box-shadow: inset 0 2px 0 var(--trace-strong);
 }
 
 .label.decoder-row .swatch {
@@ -790,11 +960,16 @@ select {
   width: min(560px, 100%);
 }
 
-.empty h1 {
+.empty h2 {
   margin: 0 0 6px;
   font-size: var(--text-xl);
   line-height: 1.15;
   font-weight: 700;
+}
+
+.brand h1 {
+  margin: 0;
+  font: inherit;
 }
 
 .empty p {
@@ -864,10 +1039,11 @@ select {
 
 .support-note {
   padding: 10px 12px;
-  border-left: 3px solid var(--warn);
-  background: var(--board);
+  border: 1px solid rgba(232, 197, 71, 0.45);
+  border-radius: var(--radius);
+  background: rgba(232, 197, 71, 0.07);
   font-size: var(--text-s);
-  color: var(--silk-dim);
+  color: var(--silk);
 }
 
 .dropzone {
@@ -903,23 +1079,37 @@ select {
   align-items: flex-start;
   padding: 10px 12px;
   border: 1px solid var(--trace-strong);
-  border-left: 3px solid var(--silk-dim);
   border-radius: var(--radius);
   background: var(--board-raised);
   font-size: var(--text-s);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
 }
 
+/* Tone is a status lamp, like an LED on the board. */
+.toast::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--silk-dim);
+}
+
 .toast.error {
-  border-left-color: var(--danger);
+  border-color: rgba(242, 95, 92, 0.55);
 }
 
-.toast.warn {
-  border-left-color: var(--warn);
+.toast.error::before {
+  background: var(--danger);
 }
 
-.toast.ok {
-  border-left-color: var(--ok);
+.toast.warn::before {
+  background: var(--warn);
+}
+
+.toast.ok::before {
+  background: var(--ok);
 }
 
 .toast p {
@@ -963,8 +1153,14 @@ select {
     gap: 6px;
   }
 
+  /* Keep the h1 for assistive tech; the logo carries the brand visually. */
   .brand .wordmark {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
   .panel {
@@ -972,7 +1168,7 @@ select {
     left: 0;
     right: 0;
     bottom: calc(56px + env(safe-area-inset-bottom));
-    height: min(68dvh, 620px);
+    height: min(60dvh, 600px);
     z-index: 10;
     border-right: 0;
     border-top: 1px solid var(--trace-strong);
@@ -1005,6 +1201,11 @@ select {
     border-top: 1px solid var(--trace);
     background: var(--board);
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .bottom-tabs [role='tablist'] {
+    display: flex;
+    flex: 1;
   }
 
   .bottom-tabs button {
@@ -1042,7 +1243,22 @@ select {
   }
 
   .chip {
-    min-height: 38px;
+    min-height: 40px;
+  }
+
+  /* Thumb-sized targets on touch layouts. */
+  :root {
+    --ruler-h: 40px;
+  }
+
+  .device-pill,
+  .btn.small,
+  .segmented button {
+    min-height: 40px;
+  }
+
+  .check {
+    min-height: 44px;
   }
 
   .icon-btn {
@@ -1050,7 +1266,7 @@ select {
     height: 40px;
   }
 
-  .empty h1 {
+  .empty h2 {
     font-size: 26px;
   }
 

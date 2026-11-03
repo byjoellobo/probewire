@@ -15,7 +15,7 @@ describe('demo scenario', () => {
     const out = uartDecoder.decode(input, { tx: 0, rx: 1 }, { baud: 115200, format: 'ascii' });
     // UART rows: 0 RX, 1 RX bits, 2 TX, 3 TX bits.
     const tx = out.annotations.filter((a) => a.row === 2 && a.kind === 'data').map((a) => a.value ?? 0);
-    expect(String.fromCharCode(...tx)).toContain('Hello from Logic in a Tab #0');
+    expect(String.fromCharCode(...tx)).toContain('Hello from Probewire #0');
     expect(out.annotations.some((a) => a.kind === 'error')).toBe(false);
   });
 

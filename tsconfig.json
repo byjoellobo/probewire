@@ -17,5 +17,5 @@
     "noEmit": true,
     "types": ["vite/client", "vite-plugin-pwa/client", "w3c-web-serial", "w3c-web-usb"]
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src"]
 }

@@ -41,16 +41,30 @@ const MAX_FILE_BYTES = 1024 ** 3;
 
 const TAB_LABELS: Record<Tab, string> = { device: 'Device', decoders: 'Decoders', library: 'Library' };
 
-function useCompact(): boolean {
-  const query = '(max-width: 820px)';
-  const [compact, setCompact] = useState(() => window.matchMedia(query).matches);
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
   useEffect(() => {
     const mq = window.matchMedia(query);
-    const on = (): void => setCompact(mq.matches);
+    const on = (): void => setMatches(mq.matches);
     mq.addEventListener('change', on);
     return () => mq.removeEventListener('change', on);
-  }, []);
-  return compact;
+  }, [query]);
+  return matches;
+}
+
+/** Arrow keys, Home and End move between tabs in a tablist, per the ARIA tabs pattern. */
+function moveTabFocus(e: KeyboardEvent): void {
+  const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+  if (!keys.includes(e.key)) return;
+  const tabs = [...(e.currentTarget as HTMLElement).querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+  const current = tabs.indexOf(document.activeElement as HTMLButtonElement);
+  if (current < 0) return;
+  e.preventDefault();
+  const last = tabs.length - 1;
+  const next =
+    e.key === 'Home' ? 0 : e.key === 'End' ? last : e.key === 'ArrowLeft' ? (current === 0 ? last : current - 1) : current === last ? 0 : current + 1;
+  tabs[next].focus();
+  tabs[next].click();
 }
 
 export function App() {
@@ -63,7 +77,8 @@ export function App() {
   const notify = toasts.push;
   const analyzer = useAnalyzer(settings, notify);
   const library = useLibrary();
-  const compact = useCompact();
+  const compact = useMediaQuery('(max-width: 820px)');
+  const coarsePointer = useMediaQuery('(pointer: coarse)');
 
   const [ws, setWs] = useState<Workspace | undefined>(undefined);
   const [savedId, setSavedId] = useState<string | undefined>(undefined);
@@ -138,7 +153,14 @@ export function App() {
     const outcome = await analyzer.capture(dev);
     if (!outcome) return;
     // A first-time visitor sees decoding straight away.
-    const decoders = settings.decoders.length > 0 ? undefined : ['uart', 'i2c', 'spi'].map((id) => newDecoderInstance(id, outcome.capture));
+    // The demo prints text over UART, so show it as characters.
+    const decoders =
+      settings.decoders.length > 0
+        ? undefined
+        : ['uart', 'i2c', 'spi'].map((id) => {
+            const inst = newDecoderInstance(id, outcome.capture);
+            return id === 'uart' ? { ...inst, options: { ...inst.options, format: 'ascii' } } : inst;
+          });
     showCapture(outcome.capture, undefined, decoders);
     if (settings.autoSave) await keep(outcome.capture);
   }, [analyzer, patch, settings.decoders.length, settings.autoSave, showCapture, keep]);
@@ -210,15 +232,17 @@ export function App() {
   useEffect(() => {
     type LaunchParams = { files: Array<{ getFile(): Promise<File> }> };
     const lq = (window as unknown as { launchQueue?: { setConsumer(cb: (p: LaunchParams) => void): void } }).launchQueue;
-    lq?.setConsumer(async (params) => {
-      for (const handle of params.files) await openFile(await handle.getFile());
+    lq?.setConsumer((params) => {
+      void (async () => {
+        for (const handle of params.files) await openFile(await handle.getFile());
+      })();
     });
   }, [openFile]);
 
   useEffect(() => {
     const update = registerSW({
       onNeedRefresh: () => notify('info', 'A new version is ready.', { label: 'Reload', run: () => void update(true) }),
-      onOfflineReady: () => notify('ok', 'Logic in a Tab now works offline.'),
+      onOfflineReady: () => notify('ok', 'Probewire now works offline.'),
     });
   }, [notify]);
 
@@ -284,7 +308,11 @@ export function App() {
 
   const dev = analyzer.connected;
   const formErrors = dev
-    ? configErrors(dev.kind, { info: dev.kind === 'gusmanb' ? dev.device.info : undefined, identity: dev.kind === 'sigrok-pico' ? dev.device.identity : undefined }, settings.configs)
+    ? configErrors(
+        dev.kind,
+        { info: dev.kind === 'gusmanb' ? dev.device.info : undefined, identity: dev.kind === 'sigrok-pico' ? dev.device.identity : undefined },
+        settings.configs,
+      )
     : [];
   const hardwareChoice = settings.choice === 'gusmanb' || settings.choice === 'sigrok-pico';
   const canCapture = !analyzer.connecting && formErrors.length === 0 && (!!dev || !hardwareChoice);
@@ -327,6 +355,7 @@ export function App() {
       )}
       {tab === 'library' && (
         <LibraryPanel
+          coarsePointer={coarsePointer}
           items={library.items}
           currentId={ws?.capture.id}
           currentSaved={!!ws && savedId === ws.capture.id}
@@ -349,7 +378,11 @@ export function App() {
               })
               .catch((err: unknown) => notify('error', `Could not delete: ${errorMessage(err)}`));
           }}
-          onExport={(id) => void loadCapture(id).then(({ capture }) => exportCapture(capture)).catch((err: unknown) => notify('error', errorMessage(err)))}
+          onExport={(id) =>
+            void loadCapture(id)
+              .then(({ capture }) => exportCapture(capture))
+              .catch((err: unknown) => notify('error', errorMessage(err)))
+          }
           onImport={() => void importFile()}
           onSaveCurrent={() => ws && void keep(ws.capture)}
           onPersist={() =>
@@ -382,6 +415,11 @@ export function App() {
         if (file) void openFile(file);
       }}
     >
+      {ws && (
+        <a class="skip-link" href="#waveform">
+          Skip to waveform
+        </a>
+      )}
       <Header
         deviceTitle={dev?.device.summary.title}
         connecting={analyzer.connecting}
@@ -402,7 +440,7 @@ export function App() {
       />
       <aside class={`panel${sheetOpen ? ' open' : ''}`} aria-label="Settings">
         <div class="sheet-handle" />
-        <div class="tabs" role="tablist">
+        <div class="tabs" role="tablist" aria-label="Settings sections" onKeyDown={moveTabFocus}>
           {(Object.keys(TAB_LABELS) as Tab[]).map((t) => (
             <button key={t} type="button" role="tab" class="tab" aria-selected={tab === t} onClick={() => setTab(t)}>
               {TAB_LABELS[t]}
@@ -427,27 +465,40 @@ export function App() {
             handleRef={traceRef}
           />
         ) : (
-          <EmptyState support={support} busy={analyzer.running || analyzer.connecting} onDemo={() => void runDemo()} onConnect={() => openTab('device')}
+          <EmptyState
+            support={support}
+            busy={analyzer.running || analyzer.connecting}
+            onDemo={() => void runDemo()}
+            onConnect={() => openTab('device')}
             onOpen={() => void importFile()}
             recent={library.items[0] ? { name: library.items[0].name, onReopen: () => void openFromLibrary(library.items[0].id) } : undefined}
           />
         )}
         {dragging && <div class="dropzone">Drop a .sr file to open it</div>}
       </main>
-      <StatusBar capture={ws?.capture} cursors={cursors} readout={readout} progress={analyzer.progress} />
-      <nav class="bottom-tabs" role="tablist" aria-label="Panels">
-        <button type="button" role="tab" aria-selected={!sheetOpen} onClick={() => setSheetOpen(false)}>
-          <IconWave /> Trace
-        </button>
-        <button type="button" role="tab" aria-selected={sheetOpen && tab === 'device'} onClick={() => openTab('device')}>
-          <IconDevice /> Device
-        </button>
-        <button type="button" role="tab" aria-selected={sheetOpen && tab === 'decoders'} onClick={() => openTab('decoders')}>
-          <IconDecode /> Decoders
-        </button>
-        <button type="button" role="tab" aria-selected={sheetOpen && tab === 'library'} onClick={() => openTab('library')}>
-          <IconLibrary /> Library
-        </button>
+      <StatusBar
+        capture={ws?.capture}
+        cursors={cursors}
+        readout={readout}
+        progress={analyzer.progress}
+        blockedReason={dev ? formErrors[0] : undefined}
+        coarsePointer={coarsePointer}
+      />
+      <nav class="bottom-tabs" aria-label="Sections">
+        <div role="tablist" aria-label="Panels" onKeyDown={moveTabFocus}>
+          <button type="button" role="tab" aria-selected={!sheetOpen} onClick={() => setSheetOpen(false)}>
+            <IconWave /> Trace
+          </button>
+          <button type="button" role="tab" aria-selected={sheetOpen && tab === 'device'} onClick={() => openTab('device')}>
+            <IconDevice /> Device
+          </button>
+          <button type="button" role="tab" aria-selected={sheetOpen && tab === 'decoders'} onClick={() => openTab('decoders')}>
+            <IconDecode /> Decoders
+          </button>
+          <button type="button" role="tab" aria-selected={sheetOpen && tab === 'library'} onClick={() => openTab('library')}>
+            <IconLibrary /> Library
+          </button>
+        </div>
       </nav>
       <Toasts api={toasts} />
     </div>

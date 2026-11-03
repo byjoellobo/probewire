@@ -195,7 +195,11 @@ class I2cDecoderState {
       texts = [`${label} ${short}`, `${label[0]} ${hex(seg.address, seg.addressBits)}`];
     } else {
       const data = seg.data.map((v) => formatValueShort(v, 8, this.format)).join(' ');
-      texts = [`${label} ${short}: ${data}`, `${label[0]} ${hex(seg.address, seg.addressBits)}: ${data}`, `${label[0]} ${hex(seg.address, seg.addressBits)}`];
+      texts = [
+        `${label} ${short}: ${data}`,
+        `${label[0]} ${hex(seg.address, seg.addressBits)}: ${data}`,
+        `${label[0]} ${hex(seg.address, seg.addressBits)}`,
+      ];
     }
     this.transactions.push(ann(seg.start, end, ROW_TRANSACTIONS, 'summary', texts, seg.address));
   }

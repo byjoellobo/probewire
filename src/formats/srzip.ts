@@ -12,15 +12,7 @@
  * it shares no code with libsigrok.
  */
 import { unzipSync, zip, unzip, type AsyncZippable, type Unzipped, type ZipOptions } from 'fflate';
-import {
-  allocWords,
-  channelBitWidth,
-  createCapture,
-  wordBytesFor,
-  type AnalogChannel,
-  type Capture,
-  type LogicChannel,
-} from '../core/capture';
+import { allocWords, channelBitWidth, createCapture, wordBytesFor, type AnalogChannel, type Capture, type LogicChannel } from '../core/capture';
 import { formatSamplerate, parseSizeString } from './sizestring';
 
 /** Logic chunk size used by libsigrok's writer. */
@@ -42,10 +34,7 @@ export class SrFormatError extends Error {
 
 /** Escapes a value the way GKeyFile does when writing. */
 function escapeValue(value: string): string {
-  let out = value
-    .replace(/\\/g, '\\\\')
-    .replace(/\n/g, '\\n')
-    .replace(/\r/g, '\\r');
+  let out = value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
   if (out.startsWith(' ')) out = `\\s${out.slice(1)}`;
   else if (out.startsWith('\t')) out = `\\t${out.slice(1)}`;
   return out;
@@ -312,7 +301,7 @@ export function parseSrEntries(files: Unzipped, name = 'Imported capture'): SrRe
       .sort((a, b) => a[0] - b[0])
       .map(([n, chName]) => ({ index: n - 1, name: chName }));
     if (usableBits < 32) {
-      const mask = usableBits >= 32 ? 0xffffffff : (2 ** usableBits - 1);
+      const mask = usableBits >= 32 ? 0xffffffff : 2 ** usableBits - 1;
       if (mask !== 0xffffffff) for (let i = 0; i < samples.length; i++) samples[i] &= mask;
     }
   }
@@ -396,7 +385,9 @@ function unzipSession(bytes: Uint8Array): Promise<Unzipped> {
   };
   const check = (files: Unzipped): Unzipped => {
     if (tooBig) {
-      throw new SrFormatError(`This file expands to more than ${Math.round(MAX_UNCOMPRESSED_BYTES / 1024 ** 3 * 10) / 10} GB, which is too large to open here.`);
+      throw new SrFormatError(
+        `This file expands to more than ${Math.round((MAX_UNCOMPRESSED_BYTES / 1024 ** 3) * 10) / 10} GB, which is too large to open here.`,
+      );
     }
     return files;
   };

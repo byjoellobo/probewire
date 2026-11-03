@@ -16,7 +16,7 @@ const values = (out: DecodeOutput, row: number, kind: Annotation['kind'] = 'data
   out.annotations.filter((a) => a.row === row && a.kind === kind).map((a) => a.value);
 
 function roundTrip(bytes: number[], rate: number, synth: UartSynthOptions, options: OptionValues): DecodeOutput {
-  const b = new SignalBuilder(rate, Math.ceil(rate * ((bytes.length + 4) * 13) / synth.baud), 1);
+  const b = new SignalBuilder(rate, Math.ceil((rate * ((bytes.length + 4) * 13)) / synth.baud), 1);
   b.uart(0, 2 / synth.baud, bytes, synth);
   return decode(b, rate, { rx: 0 }, { baud: synth.baud, ...options });
 }

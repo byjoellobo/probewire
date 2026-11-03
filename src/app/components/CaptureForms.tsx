@@ -108,9 +108,7 @@ export function GusmanbForm({ info, config, onChange }: GusmanbFormProps) {
             All
           </button>
         </div>
-        <p class="hint">
-          Channels above 8 or 16 use more memory per sample: up to {formatCount(limits.totalSamples)} samples with this selection.
-        </p>
+        <p class="hint">Channels above 8 or 16 use more memory per sample: up to {formatCount(limits.totalSamples)} samples with this selection.</p>
       </div>
 
       <div class="group">
@@ -157,9 +155,15 @@ export function GusmanbForm({ info, config, onChange }: GusmanbFormProps) {
         {t.type === 'edge' && (
           <>
             <Field label="Extra bursts" htmlFor="g-bursts">
-              <NumberInput id="g-bursts" value={t.bursts} min={0} max={t.measureBursts ? 253 : 254} onChange={(n) => setTrigger({ ...t, bursts: n })} />
+              <NumberInput
+                id="g-bursts"
+                value={t.bursts}
+                min={0}
+                max={t.measureBursts ? 253 : 254}
+                onChange={(n) => setTrigger({ ...t, bursts: n })}
+              />
             </Field>
-            <label class="row hint" style={{ margin: '4px 0 0 120px' }}>
+            <label class="check">
               <input
                 type="checkbox"
                 checked={t.measureBursts}
@@ -200,9 +204,7 @@ export function GusmanbForm({ info, config, onChange }: GusmanbFormProps) {
                 }}
               />
             </Field>
-            <p class="hint">
-              Leftmost digit is {channelLabel(t.baseChannel)}. Pattern triggers need GPIO0 bridged to GPIO1 on the board.
-            </p>
+            <p class="hint">Leftmost digit is {channelLabel(t.baseChannel)}. Pattern triggers need GPIO0 bridged to GPIO1 on the board.</p>
           </>
         )}
         {t.type === 'blast' && <p class="hint">Blast mode samples at {formatHz(info.blastFrequency)} with no pre-trigger data.</p>}
@@ -214,7 +216,13 @@ export function GusmanbForm({ info, config, onChange }: GusmanbFormProps) {
           {t.type === 'blast' ? (
             <input id="g-rate" class="input" value={formatHz(info.blastFrequency)} disabled />
           ) : (
-            <RateInput id="g-rate" value={config.sampleRate} min={limits.minFrequency} max={info.maxFrequency} onChange={(sampleRate) => set({ sampleRate })} />
+            <RateInput
+              id="g-rate"
+              value={config.sampleRate}
+              min={limits.minFrequency}
+              max={info.maxFrequency}
+              onChange={(sampleRate) => set({ sampleRate })}
+            />
           )}
         </Field>
         {t.type !== 'blast' && (
@@ -300,15 +308,21 @@ export function PicoForm({ identity, config, onChange }: PicoFormProps) {
       <div class="group">
         <h2>Timing</h2>
         <Field label="Sample rate" htmlFor="p-rate">
-          <RateInput id="p-rate" value={config.sampleRate} min={MIN_SAMPLE_RATE} max={MAX_SAMPLE_RATE} onChange={(sampleRate) => set({ sampleRate })} />
+          <RateInput
+            id="p-rate"
+            value={config.sampleRate}
+            min={MIN_SAMPLE_RATE}
+            max={MAX_SAMPLE_RATE}
+            onChange={(sampleRate) => set({ sampleRate })}
+          />
         </Field>
         {effective !== config.sampleRate && <p class="hint">The device will use {formatHz(effective)}.</p>}
         <Field label="Samples" htmlFor="p-count">
           <NumberInput id="p-count" value={config.sampleCount} min={16} max={200_000_000} onChange={(sampleCount) => set({ sampleCount })} />
         </Field>
         <p class="hint">
-          {formatDuration(config.sampleCount / effective, 3)} of signal. Captures larger than the Pico's RAM stream over USB; at high rates the device may
-          stop with an overflow.
+          {formatDuration(config.sampleCount / effective, 3)} of signal. Captures larger than the Pico's RAM stream over USB; at high rates the device
+          may stop with an overflow.
         </p>
         <Errors errors={errors} />
       </div>
@@ -333,7 +347,13 @@ export function DemoForm({ config, onChange }: DemoFormProps) {
         A microcontroller printing over UART, writing and reading an I2C EEPROM, reading a SPI flash ID, plus PWM and a clock.
       </p>
       <Field label="Sample rate" htmlFor="d-rate">
-        <RateInput id="d-rate" value={config.sampleRate} min={10_000} max={500_000_000} onChange={(sampleRate) => onChange({ ...config, sampleRate })} />
+        <RateInput
+          id="d-rate"
+          value={config.sampleRate}
+          min={10_000}
+          max={500_000_000}
+          onChange={(sampleRate) => onChange({ ...config, sampleRate })}
+        />
       </Field>
       <Field label="Samples" htmlFor="d-count">
         <select
@@ -353,10 +373,14 @@ export function DemoForm({ config, onChange }: DemoFormProps) {
 }
 
 /** True when the config for the connected device is ready to capture. */
-export function configErrors(kind: 'gusmanb' | 'sigrok-pico' | 'demo', ctx: { info?: GusmanbDeviceInfo; identity?: PicoIdentity }, configs: {
-  gusmanb: GusmanbCaptureConfig;
-  pico: PicoCaptureConfig;
-}): string[] {
+export function configErrors(
+  kind: 'gusmanb' | 'sigrok-pico' | 'demo',
+  ctx: { info?: GusmanbDeviceInfo; identity?: PicoIdentity },
+  configs: {
+    gusmanb: GusmanbCaptureConfig;
+    pico: PicoCaptureConfig;
+  },
+): string[] {
   if (kind === 'gusmanb' && ctx.info) return validateConfig(configs.gusmanb, ctx.info);
   if (kind === 'sigrok-pico' && ctx.identity) return validatePicoConfig(configs.pico, ctx.identity);
   return [];

@@ -10,6 +10,7 @@ export const THEME = {
   board: '#152724',
   boardRaised: '#1b302c',
   trace: '#24403b',
+  traceStrong: '#335a52',
   silk: '#e6ebe3',
   silkDim: '#8fa39c',
   silkFaint: '#53675f',
@@ -26,18 +27,7 @@ export const THEME = {
  * yellow, green, blue, violet, grey, white), tuned to read on the dark board.
  * "Black" is drawn as a cool light grey so it stays visible.
  */
-export const WIRE_COLORS = [
-  '#b8c2c6',
-  '#c08a5c',
-  '#e5534b',
-  '#f08c3a',
-  '#e8d44d',
-  '#5dc26a',
-  '#4c9be8',
-  '#a77be0',
-  '#7f8a8f',
-  '#f4f4ee',
-] as const;
+export const WIRE_COLORS = ['#b8c2c6', '#c08a5c', '#e5534b', '#f08c3a', '#e8d44d', '#5dc26a', '#4c9be8', '#a77be0', '#7f8a8f', '#f4f4ee'] as const;
 
 /** The colour of the physical wire, for the label swatch. */
 export const WIRE_SWATCH = ['#1c1c1c', '#7a4a26', '#d42f2f', '#ef7a1a', '#f2d22e', '#2f9e44', '#1f6fd1', '#7b4bc4', '#8a8f93', '#f5f5f0'] as const;

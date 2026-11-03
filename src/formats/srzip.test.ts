@@ -118,7 +118,9 @@ describe('reading other writers', () => {
   it('reads v1-style metadata with spaces, CRLF and an unchunked logic-1', () => {
     const files = {
       version: strToU8('1'),
-      metadata: strToU8('[device 1]\r\ndriver = fx2lafw\r\ncapturefile = logic-1\r\nunitsize = 1\r\ntotal probes = 8\r\nsamplerate = 24 MHz\r\nprobe1 = SCL\r\nprobe2 = SDA\r\n'),
+      metadata: strToU8(
+        '[device 1]\r\ndriver = fx2lafw\r\ncapturefile = logic-1\r\nunitsize = 1\r\ntotal probes = 8\r\nsamplerate = 24 MHz\r\nprobe1 = SCL\r\nprobe2 = SDA\r\n',
+      ),
       'logic-1': new Uint8Array([0, 1, 2, 3, 0xff]),
     };
     const { capture } = parseSrEntries(files);

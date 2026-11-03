@@ -120,7 +120,13 @@ export class GusmanbFirmware implements FakeFirmware {
     const blast = req.triggerType === 3;
     const count = blast ? req.postSamples : req.preSamples + req.postSamples * (req.loopCount + 1);
     const maxRate = blast ? this.opts.blastFrequency : this.opts.maxFrequency;
-    if (this.opts.rejectCaptures || count * bps > this.opts.bufferBytes || req.frequency > maxRate || req.channels.length < 1 || req.channels.length > 24) {
+    if (
+      this.opts.rejectCaptures ||
+      count * bps > this.opts.bufferBytes ||
+      req.frequency > maxRate ||
+      req.channels.length < 1 ||
+      req.channels.length > 24
+    ) {
       port.send('CAPTURE_ERROR\r\n');
       return;
     }

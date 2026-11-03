@@ -1,0 +1,12 @@
+dist/
+dev-dist/
+coverage/
+playwright-report/
+test-results/
+.playwright-mcp/
+.remember/
+package-lock.json
+public/
+CHANGELOG.md
+CODE_OF_CONDUCT.md
+.impeccable/

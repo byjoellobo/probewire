@@ -7,16 +7,7 @@
  */
 import type { LogicPyramid } from '../core/pyramid';
 
-export type AnnotationKind =
-  | 'data'
-  | 'address'
-  | 'control'
-  | 'ack'
-  | 'nack'
-  | 'bit'
-  | 'summary'
-  | 'warning'
-  | 'error';
+export type AnnotationKind = 'data' | 'address' | 'control' | 'ack' | 'nack' | 'bit' | 'summary' | 'warning' | 'error';
 
 export interface Annotation {
   /** First sample covered (inclusive). */
@@ -138,7 +129,10 @@ export function formatValueShort(value: number, bits: number, format: DataFormat
 }
 
 export function hex(value: number, bits: number): string {
-  return value.toString(16).toUpperCase().padStart(Math.ceil(bits / 4), '0');
+  return value
+    .toString(16)
+    .toUpperCase()
+    .padStart(Math.ceil(bits / 4), '0');
 }
 
 const CONTROL_NAMES: Record<number, string> = {

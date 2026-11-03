@@ -60,8 +60,9 @@ export function RateInput({ id, value, max, min = 0, onChange }: RateInputProps)
     onChange(hz);
   };
   const listId = `${id}-presets`;
+  const errorId = `${id}-error`;
   return (
-    <>
+    <div class="stack">
       <input
         id={id}
         class="input"
@@ -69,18 +70,24 @@ export function RateInput({ id, value, max, min = 0, onChange }: RateInputProps)
         value={text}
         inputMode="decimal"
         aria-invalid={bad}
+        aria-describedby={bad ? errorId : undefined}
         onInput={(e) => setText((e.currentTarget as HTMLInputElement).value)}
         onChange={(e) => commit((e.currentTarget as HTMLInputElement).value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') commit((e.currentTarget as HTMLInputElement).value);
         }}
       />
+      {bad && (
+        <span id={errorId} class="hint error">
+          Enter a rate such as 10M, 500k or 48000.
+        </span>
+      )}
       <datalist id={listId}>
         {RATE_PRESETS.filter((r) => r <= max && r >= min).map((r) => (
           <option key={r} value={formatFrequency(r, 6)} />
         ))}
       </datalist>
-    </>
+    </div>
   );
 }
 

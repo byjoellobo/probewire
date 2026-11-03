@@ -50,7 +50,7 @@ export function buildScenario(opts: ScenarioOptions): SampleWords {
   for (let t = 20e-6; t < duration - PERIOD_S * 0.9 || (t === 20e-6 && t < duration); t += PERIOD_S) {
     let cursor = t;
     if (uartOk) {
-      const line = text(`Hello from Logic in a Tab #${counter}\r\n`);
+      const line = text(`Hello from Probewire #${counter}\r\n`);
       cursor = b.uart(0, cursor, line, { baud: DEMO_UART_BAUD });
       b.uart(1, cursor + 50e-6, text('OK\r\n'), { baud: DEMO_UART_BAUD });
     }
