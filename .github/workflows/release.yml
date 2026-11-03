@@ -1,0 +1,80 @@
+name: Release
+
+# Push a tag like v0.2.0 (matching package.json) to publish a GitHub Release.
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+
+      - name: Tag must match package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "v${version}" != "${GITHUB_REF_NAME}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version ${version}"
+            exit 1
+          fi
+
+      - name: Checks
+        run: npm run check
+
+      # Relative base path: the zip works from any folder on any HTTPS host.
+      - name: Build
+        run: npm run build
+        env:
+          BASE_PATH: ./
+
+      - name: Package
+        run: |
+          cp LICENSE THIRD_PARTY_NOTICES.md dist/
+          mkdir -p dist/licenses
+          for pkg in preact fflate web-serial-polyfill workbox-window @fontsource/barlow-semi-condensed; do
+            cp "node_modules/${pkg}/LICENSE" "dist/licenses/$(echo "${pkg}" | tr '/@' '-_')-LICENSE"
+          done
+          archive="probewire-${GITHUB_REF_NAME}.zip"
+          (cd dist && zip -qr "../${archive}" .)
+          sha256sum "${archive}" > "${archive}.sha256"
+
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="${version}" '
+            $0 ~ "^## \\[" v "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then
+            echo "::error::CHANGELOG.md has no section for ${version}"
+            exit 1
+          fi
+          {
+            echo ""
+            echo "**Try it:** https://byjoellobo.github.io/probewire/"
+            echo ""
+            echo "**Self-host:** unzip \`probewire-${GITHUB_REF_NAME}.zip\` onto any HTTPS static host (USB access needs HTTPS or localhost)."
+          } >> notes.md
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags=""
+          case "${GITHUB_REF_NAME}" in *-*) flags="--prerelease" ;; esac
+          gh release create "${GITHUB_REF_NAME}" \
+            "probewire-${GITHUB_REF_NAME}.zip" "probewire-${GITHUB_REF_NAME}.zip.sha256" \
+            --title "Probewire ${GITHUB_REF_NAME}" \
+            --notes-file notes.md \
+            --verify-tag ${flags}
