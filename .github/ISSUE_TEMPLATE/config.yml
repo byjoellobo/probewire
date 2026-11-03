@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/byjoellobo/probewire/tree/main/docs
+    about: Guides for getting started, hardware setup, browser support and decoders.
+  - name: Report a security vulnerability
+    url: https://github.com/byjoellobo/probewire/security/advisories/new
+    about: Please report security problems privately, not as public issues.

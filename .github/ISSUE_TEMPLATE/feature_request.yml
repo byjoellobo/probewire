@@ -1,0 +1,41 @@
+name: Feature request
+description: Suggest a new feature, decoder or analyzer driver.
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe what you are trying to do and what gets in the way today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: Describe the behaviour you have in mind. Mock-ups or examples from other tools are welcome.
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of change
+      options:
+        - New protocol decoder
+        - New analyzer or firmware
+        - Viewing or measuring
+        - Files and export
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Datasheets, protocol specifications, firmware repositories or sample captures that would help.
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I would like to help build or test this.

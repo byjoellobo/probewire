@@ -1,0 +1,83 @@
+name: Hardware report
+description: Tell us how Probewire worked with your analyzer, good or bad.
+labels: ['hardware-report']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Probewire 0.1.0 was verified against firmware models, not physical boards, so every report helps.
+        Reports where everything worked are just as useful as failures.
+  - type: dropdown
+    id: firmware
+    attributes:
+      label: Firmware
+      options:
+        - gusmanb Logic Analyzer
+        - sigrok-pico
+    validations:
+      required: true
+  - type: input
+    id: firmware-version
+    attributes:
+      label: Firmware build and version
+      description: For gusmanb, the version from the Device panel (for example LOGIC_ANALYZER_PICO_2_V6_0) and whether it is a Turbo build. For sigrok-pico, the identify string and which build (baseline, dig26, dig32).
+      placeholder: LOGIC_ANALYZER_PICO_V6_0, Turbo
+    validations:
+      required: true
+  - type: dropdown
+    id: board
+    attributes:
+      label: Board
+      options:
+        - Raspberry Pi Pico (RP2040)
+        - Raspberry Pi Pico W
+        - Raspberry Pi Pico 2 (RP2350)
+        - Raspberry Pi Pico 2 W
+        - Pico Zero or other RP2040 board
+        - Other RP2350 board
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and operating system
+      placeholder: Chrome 150 on macOS 16, or Chrome 148 on Android 17 (Pixel 9)
+    validations:
+      required: true
+  - type: dropdown
+    id: connection
+    attributes:
+      label: Connection method
+      options:
+        - USB serial (Web Serial)
+        - WebUSB
+    validations:
+      required: true
+  - type: input
+    id: settings
+    attributes:
+      label: Capture settings
+      description: Channels, sample rate, sample count, trigger and analog channels you used.
+      placeholder: 8 channels at 25 MHz, 100k samples, edge trigger on CH1 falling
+    validations:
+      required: true
+  - type: textarea
+    id: worked
+    attributes:
+      label: What worked
+      description: Connecting, capturing, triggering, decoding, saving...
+  - type: textarea
+    id: failed
+    attributes:
+      label: What did not work
+      description: Include any messages shown in the app.
+  - type: textarea
+    id: signal
+    attributes:
+      label: Signal under test
+      description: What were you measuring? A known signal (UART at a known baud rate, a PWM output) makes results easy to check.
+  - type: textarea
+    id: capture
+    attributes:
+      label: Capture file
+      description: Attach a .sr file saved from Probewire if you can (zip it first if GitHub refuses the extension).
