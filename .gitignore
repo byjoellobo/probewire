@@ -1,0 +1,7 @@
+node_modules/
+dist/
+dev-dist/
+coverage/
+.playwright-mcp/
+*.log
+.DS_Store
